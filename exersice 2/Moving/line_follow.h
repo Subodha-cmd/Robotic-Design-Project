@@ -3,6 +3,7 @@
 
 #include <Arduino.h> 
 #include <AFMotor.h>
+#include "velocity.h"
 
 AF_DCMotor motor1(1);
 AF_DCMotor motor2(2);
@@ -58,6 +59,15 @@ void stop(){
   motor2.run(RELEASE);
   motor3.run(RELEASE);
   motor4.run(RELEASE);
+};
+void go_forward_distance(float distance){
+  
+  pulseCount = 0;
+  int targetTicks = 30/(6.28*5)*distance;
+  go_forward();
+  while (pulseCount < targetTicks) { }
+  stop();
+
 };
 
 
