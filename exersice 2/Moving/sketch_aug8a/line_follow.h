@@ -9,7 +9,7 @@ AF_DCMotor motor2(2);
 AF_DCMotor motor3(3);
 AF_DCMotor motor4(4);
 
-void go_forward(int speed= 100){
+void go_forward(int speed=50){
   motor1.setSpeed(speed);
   motor2.setSpeed(speed);
   motor3.setSpeed(speed);
