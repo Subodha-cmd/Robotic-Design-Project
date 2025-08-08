@@ -1,52 +1,65 @@
-int ir_sensor_right = 51;
-int ir_sensor_left = 53;
+// Include the Servo Library
+#include <Servo.h>
 
-int sw = 45;
-int clk =49;
-int dt = 47;
+// Rotary Encoder Inputs
+#define CLK 21
+#define DT 20
 
-#include <AFMotor.h>
-#include "line_follow.h"
+Servo servo;
+int counter = 0;
+int currentStateCLK;
+int lastStateCLK;
+String currentDir = "";
 
-void setup(){
+void setup() {
+  // Set encoder pins as inputs
+  pinMode(CLK, INPUT);
+  pinMode(DT, INPUT);
 
-  pinMode(ir_sensor_right,INPUT);
-  pinMode(ir_sensor_left,INPUT);
-
+  // Setup Serial Monitor
   Serial.begin(9600);
-  go_forward(100);
-  delay(100);
-  
-  // line follower
-    
+
+  // Attach servo on pin 9 to the servo object
+  servo.attach(10);
+  servo.write(counter);
+
+  // Read the initial state of CLK
+  lastStateCLK = digitalRead(CLK);
+
+  // Call updateEncoder() when a change is seen on CLK pin
+  attachInterrupt(digitalPinToInterrupt(CLK), updateEncoder, CHANGE);
 }
 
-void loop(){
-  int right = digitalRead(ir_sensor_right);
-  int left = digitalRead(ir_sensor_left);
+void loop() {
+  //Do some useful stuff here
+}
 
-  if (right == HIGH && left == HIGH) {
-    
-    go_forward(40);
-  } 
-  else if (right == LOW && left == HIGH) {
-    
-    turn_right(100);
-  } 
-  else if (right == HIGH && left == LOW) {
-    
-    turn_left(100);
-   }
-  else {
-    stop(); // If both sensors detect black/no line
+void updateEncoder() {
+  // Read the current state of CLK
+  currentStateCLK = digitalRead(CLK);
+
+  // If last and current state of CLK are different, then pulse occurred
+  // React to only 1 state change to avoid double count
+  if (currentStateCLK != lastStateCLK && currentStateCLK == 1) {
+
+    // If the DT state is different than the CLK state then
+    // the encoder is rotating CCW so decrement
+    if (digitalRead(DT) != currentStateCLK) {
+      counter--;
+      if (counter < 0)
+        counter = 0;
+    } else {
+      // Encoder is rotating CW so increment
+      counter++;
+      if (counter > 179)
+        counter = 179;
+    }
+    // Move the servo
+    servo.write(counter);
+    Serial.print("Position: ");
+    Serial.println(counter);
   }
 
-  delay(10);
-   }
-
-
-
-
-
-
-
+  // Remember last CLK state
+  lastStateCLK = currentStateCLK;
+}
